@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sticker Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=Almarai:wght@400;700;800&family=Amiri:wght@400;700&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body {
+    background:#000; color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Cairo',sans-serif;
+    overflow-x:hidden; min-height:100vh;
+}
+body { padding:12px; padding-bottom:100px; }
+
+.header { display:flex; justify-content:space-between; align-items:center; padding:8px 4px 16px; }
+.header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+.header .vip {
+    background:linear-gradient(135deg,#FFD700,#FFA500);
+    color:#000; padding:6px 14px; border-radius:20px;
+    font-size:12px; font-weight:700;
+}
+
+.canvas-box {
+    background:linear-gradient(135deg,#1c1c1e,#2c2c2e);
+    border-radius:24px; padding:16px;
+    display:flex; justify-content:center; align-items:center;
+    margin-bottom:16px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    position:relative; overflow:hidden;
+}
+.canvas-box::before {
+    content:''; position:absolute; inset:0;
+    background:repeating-conic-gradient(#2c2c2e 0% 25%, #1c1c1e 0% 50%);
+    background-size:20px 20px; opacity:0.5;
+}
+.canvas-box canvas { position:relative; z-index:1; border-radius:12px; }
+
+.tabs {
+    display:flex; background:#1c1c1e; border-radius:14px;
+    padding:4px; margin-bottom:12px; gap:4px;
+}
+.tab {
+    flex:1; padding:10px; text-align:center; border-radius:10px;
+    font-size:14px; font-weight:600; color:#8e8e93;
+    transition:all 0.2s; cursor:pointer;
+}
+.tab.active { background:#2c2c2e; color:#fff; }
+
+.panel { display:none; }
+.panel.active { display:block; animation:fadeIn 0.2s; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+.grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:12px; }
+.grid-item {
+    aspect-ratio:1; background:#1c1c1e; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; cursor:pointer; transition:all 0.15s;
+    border:2px solid transparent;
+}
+.grid-item:active { transform:scale(0.9); background:#2c2c2e; }
+
+.font-item {
+    padding:14px 12px; background:#1c1c1e; border-radius:14px;
+    margin-bottom:8px; display:flex; justify-content:space-between;
+    align-items:center; cursor:pointer; border:2px solid transparent;
+    font-size:20px;
+}
+.font-item:active { background:#2c2c2e; }
+.font-item.selected { border-color:#0a84ff; }
+.font-item .label { color:#8e8e93; font-size:12px; }
+
+.colors { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.color-dot {
+    width:44px; height:44px; border-radius:50%;
+    cursor:pointer; border:3px solid transparent;
+    transition:all 0.15s;
+}
+.color-dot:active { transform:scale(0.85); }
+.color-dot.selected { border-color:#fff; transform:scale(1.1); }
+
+.slider-box { margin-bottom:16px; }
+.slider-box label { font-size:13px; color:#8e8e93; margin-bottom:8px; display:block; }
+input[type=range] {
+    width:100%; -webkit-appearance:none; height:6px;
+    background:#2c2c2e; border-radius:3px; outline:none;
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:24px; height:24px;
+    background:#fff; border-radius:50%; cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,0.5);
+}
+
+input[type=text] {
+    width:100%; padding:16px; background:#1c1c1e;
+    border:1px solid #2c2c2e; border-radius:14px;
+    color:#fff; font-size:16px; margin-bottom:12px;
+    font-family:Cairo,sans-serif; outline:none;
+}
+input[type=text]:focus { border-color:#0a84ff; }
+
+.btn-row { display:flex; gap:8px; margin-bottom:12px; }
+.btn {
+    flex:1; padding:14px; border-radius:14px; border:none;
+    background:#1c1c1e; color:#fff; font-size:15px; font-weight:600;
+    cursor:pointer; transition:all 0.15s; font-family:inherit;
+}
+.btn:active { transform:scale(0.96); background:#2c2c2e; }
+.btn.primary { background:#0a84ff; margin-bottom:12px; width:100%; }
+.btn.primary:active { background:#0066cc; }
+
+.pad { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
+.pad button {
+    padding:14px; background:#1c1c1e; border:none;
+    border-radius:12px; color:#fff; font-size:18px; cursor:pointer;
+}
+.pad button:active { background:#2c2c2e; }
+.pad .empty { visibility:hidden; }
+
+.save-btn {
+    position:fixed; bottom:20px; left:16px; right:16px;
+    padding:18px; background:linear-gradient(135deg,#0a84ff,#0066cc);
+    border:none; border-radius:18px; color:#fff;
+    font-size:17px; font-weight:700; cursor:pointer;
+    box-shadow:0 8px 24px rgba(10,132,255,0.4);
+    z-index:100; font-family:inherit;
+}
+.save-btn:active { transform:scale(0.97); }
+
+.toast {
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.9);
+    background:rgba(28,28,30,0.95); padding:16px 24px;
+    border-radius:14px; font-size:14px; opacity:0;
+    transition:all 0.3s; pointer-events:none; z-index:999;
+    backdrop-filter:blur(20px);
+}
+.toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🎨 استوديو الملصقات</h1>
+    <div class="vip">VIP</div>
+</div>
+
+<div class="canvas-box">
+    <canvas id="c" width="512" height="512"></canvas>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchTab('emoji',this)">إيموجي</div>
+    <div class="tab" onclick="switchTab('text',this)">نص</div>
+    <div class="tab" onclick="switchTab('color',this)">ألوان</div>
+    <div class="tab" onclick="switchTab('font',this)">خطوط</div>
+</div>
+
+<div class="panel active" id="panel-emoji">
+    <div class="grid">
+        <div class="grid-item" onclick="addEmoji('👑')">👑</div>
+        <div class="grid-item" onclick="addEmoji('❤️')">❤️</div>
+        <div class="grid-item" onclick="addEmoji('⭐')">⭐</div>
+        <div class="grid-item" onclick="addEmoji('🔥')">🔥</div>
+        <div class="grid-item" onclick="addEmoji('💎')">💎</div>
+        <div class="grid-item" onclick="addEmoji('🌙')">🌙</div>
+        <div class="grid-item" onclick="addEmoji('⚡')">⚡</div>
+        <div class="grid-item" onclick="addEmoji('🎯')">🎯</div>
+        <div class="grid-item" onclick="addEmoji('🏆')">🏆</div>
+        <div class="grid-item" onclick="addEmoji('💯')">💯</div>
+        <div class="grid-item" onclick="addEmoji('🦅')">🦅</div>
+        <div class="grid-item" onclick="addEmoji('🦁')">🦁</div>
+        <div class="grid-item" onclick="addEmoji('🐉')">🐉</div>
+        <div class="grid-item" onclick="addEmoji('🌹')">🌹</div>
+        <div class="grid-item" onclick="addEmoji('💀')">💀</div>
+        <div class="grid-item" onclick="addEmoji('👽')">👽</div>
+        <div class="grid-item" onclick="addEmoji('🎭')">🎭</div>
+        <div class="grid-item" onclick="addEmoji('🎪')">🎪</div>
+        <div class="grid-item" onclick="addEmoji('🎨')">🎨</div>
+        <div class="grid-item" onclick="addEmoji('🚀')">🚀</div>
+    </div>
+</div>
+
+<div class="panel" id="panel-text">
+    <button class="btn primary" onclick="addText()">➕ إضافة نص</button>
+    <input type="text" id="textInput" placeholder="اكتب النص هنا..." maxlength="20">
+    <div class="btn-row">
+        <button class="btn" onclick="updateText()">تحديث</button>
+        <button class="btn" onclick="deleteActive()">🗑 حذف</button>
+    </div>
+    <div class="slider-box">
+        <label>حجم الخط</label>
+        <input type="range" id="fontSize" min="20" max="200" value="80" oninput="changeSize(this.value)">
+    </div>
+    <div class="pad">
+        <div class="empty"></div>
+        <button onclick="move('up')">⬆️</button>
+        <div class="empty"></div>
+        <button onclick="move('left')">⬅️</button>
+        <button onclick="move('center')">⏺</button>
+        <button onclick="move('right')">➡️</button>
+        <div class="empty"></div>
+        <button onclick="move('down')">⬇️</button>
+        <div class="empty"></div>
+    </div>
+    <div class="btn-row">
+        <button class="btn" onclick="rotate(-15)">↺</button>
+        <button class="btn" onclick="rotate(15)">↻</button>
+        <button class="btn" onclick="flip()">🔄</button>
+    </div>
+</div>
+
+<div class="panel" id="panel-color">
+    <div class="colors">
+        <div class="color-dot selected" style="background:#fff" onclick="setColor('#ffffff',this)"></div>
+        <div class="color-dot" style="background:#000" onclick="setColor('#000000',this)"></div>
+        <div class="color-dot" style="background:#ff3b30" onclick="setColor('#ff3b30',this)"></div>
+        <div class="color-dot" style="background:#ff9500" onclick="setColor('#ff9500',this)"></div>
+        <div class="color-dot" style="background:#ffcc00" onclick="setColor('#ffcc00',this)"></div>
+        <div class="color-dot" style="background:#34c759" onclick="setColor('#34c759',this)"></div>
+        <div class="color-dot" style="background:#00c7be" onclick="setColor('#00c7be',this)"></div>
+        <div class="color-dot" style="background:#0a84ff" onclick="setColor('#0a84ff',this)"></div>
+        <div class="color-dot" style="background:#5e5ce6" onclick="setColor('#5e5ce6',this)"></div>
+        <div class="color-dot" style="background:#bf5af2" onclick="setColor('#bf5af2',this)"></div>
+        <div class="color-dot" style="background:#ff2d55" onclick="setColor('#ff2d55',this)"></div>
+        <div class="color-dot" style="background:linear-gradient(135deg,#FFD700,#FFA500)" onclick="setColor('#FFD700',this)"></div>
+    </div>
+    <div class="slider-box">
+        <label>شفافية</label>
+        <input type="range" id="opacity" min="0" max="100" value="100" oninput="setOpacity(this.value)">
+    </div>
+    <div class="slider-box">
+        <label>ظل (Shadow)</label>
+        <input type="range" id="shadow" min="0" max="20" value="0" oninput="setShadow(this.value)">
+    </div>
+</div>
+
+<div class="panel" id="panel-font">
+    <div class="font-item" onclick="setFont('Cairo',this)">
+        <span style="font-family:Cairo">القاهرة</span>
+        <span class="label">Cairo</span>
+    </div>
+    <div class="font-item" onclick="setFont('Tajawal',this)">
+        <span style="font-family:Tajawal">تجوال</span>
+        <span class="label">Tajawal</span>
+    </div>
+    <div class="font-item" onclick="setFont('Almarai',this)">
+        <span style="font-family:Almarai">المراعي</span>
+        <span class="label">Almarai</span>
+    </div>
+    <div class="font-item" onclick="setFont('Amiri',this)">
+        <span style="font-family:Amiri">أميري</span>
+        <span class="label">Amiri</span>
+    </div>
+    <div class="font-item" onclick="setFont('Reem Kufi',this)">
+        <span style="font-family:'Reem Kufi'">ريم كوفي</span>
+        <span class="label">Reem Kufi</span>
+    </div>
+    <div class="font-item" onclick="setFont('Arial',this)">
+        <span style="font-family:Arial">Arial</span>
+        <span class="label">Arial</span>
+    </div>
+</div>
+
+<button class="save-btn" onclick="saveSticker()">💾 حفظ الملصق المميز</button>
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+tg.setHeaderColor('#000000');
+tg.setBackgroundColor('#000000');
+
+const canvas = new fabric.Canvas('c', {
+    backgroundColor:'transparent',
+    preserveObjectStacking:true,
+    selection:false
+});
+
+let activeObj = null;
+
+canvas.on('selection:created', e => activeObj = e.selected[0]);
+canvas.on('selection:updated', e => activeObj = e.selected[0]);
+canvas.on('selection:cleared', () => activeObj = null);
+
+function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+}
+
+function toast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+function addEmoji(emoji) {
+    const obj = new fabric.IText(emoji, {
+        left:256, top:256, fontSize:120,
+        originX:'center', originY:'center', fontFamily:'Arial'
+    });
+    canvas.add(obj);
+    canvas.setActiveObject(obj);
+    activeObj = obj;
+    canvas.renderAll();
+    toast('تمت الإضافة ✅');
+}
+
+function addText() {
+    const val = document.getElementById('textInput').value || 'نصك هنا';
+    const obj = new fabric.IText(val, {
+        left:256, top:256, fontSize:80,
+        fill:'#ffffff', fontFamily:'Cairo',
+        originX:'center', originY:'center'
+    });
+    canvas.add(obj);
+    canvas.setActiveObject(obj);
+    activeObj = obj;
+    canvas.renderAll();
+}
+
+function updateText() {
+    if (!activeObj || activeObj.type !== 'i-text') return;
+    const val = document.getElementById('textInput').value;
+    if (!val) return;
+    activeObj.set('text', val);
+    canvas.renderAll();
+}
+
+function deleteActive() {
+    if (activeObj) {
+        canvas.remove(activeObj);
+        activeObj = null;
+        canvas.renderAll();
+        toast('تم الحذف 🗑');
+    }
+}
+
+function setColor(color, el) {
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+    if (activeObj) {
+        activeObj.set('fill', color);
+        canvas.renderAll();
+    }
+}
+
+function setOpacity(val) {
+    if (activeObj) {
+        activeObj.set('opacity', val/100);
+        canvas.renderAll();
+    }
+}
+
+function setShadow(val) {
+    if (activeObj) {
+        activeObj.set('shadow', val > 0 ? new fabric.Shadow({
+            color:'rgba(0,0,0,0.8)', blur:parseInt(val), offsetX:0, offsetY:0
+        }) : null);
+        canvas.renderAll();
+    }
+}
+
+function setFont(font, el) {
+    document.querySelectorAll('.font-item').forEach(f => f.classList.remove('selected'));
+    el.classList.add('selected');
+    if (activeObj && activeObj.type === 'i-text') {
+        activeObj.set('fontFamily', font);
+        canvas.renderAll();
+        toast('الخط: ' + font);
+    }
+}
+
+function changeSize(val) {
+    if (activeObj) {
+        activeObj.set('fontSize', parseInt(val));
+        canvas.renderAll();
+    }
+}
+
+function move(dir) {
+    if (!activeObj) return;
+    const step = 10;
+    if (dir === 'up')     activeObj.set('top', activeObj.top - step);
+    if (dir === 'down')   activeObj.set('top', activeObj.top + step);
+    if (dir === 'left')   activeObj.set('left', activeObj.left - step);
+    if (dir === 'right')  activeObj.set('left', activeObj.left + step);
+    if (dir === 'center') activeObj.set({ left:256, top:256 });
+    canvas.renderAll();
+}
+
+function rotate(deg) {
+    if (activeObj) {
+        activeObj.rotate((activeObj.angle || 0) + deg);
+        canvas.renderAll();
+    }
+}
+
+function flip() {
+    if (activeObj) {
+        activeObj.set('flipX', !activeObj.flipX);
+        canvas.renderAll();
+    }
+}
+
+function saveSticker() {
+    if (canvas.getObjects().length === 0) {
+        toast('أضف شيئاً أولاً!');
+        return;
+    }
+    canvas.discardActiveObject();
+    canvas.renderAll();
+    const dataURL = canvas.toDataURL({ format:'png', quality:1.0, multiplier:1 });
+    tg.sendData(JSON.stringify({ action:'save', image:dataURL }));
+    tg.close();
+}
+
+window.addEventListener('load', () => {
+    const obj = new fabric.IText('اسمك', {
+        left:256, top:256, fontSize:80,
+        fill:'#ffffff', fontFamily:'Cairo',
+        originX:'center', originY:'center'
+    });
+    canvas.add(obj);
+    canvas.setActiveObject(obj);
+    activeObj = obj;
+    canvas.renderAll();
+});
+</script>
+</body>
+</html>
