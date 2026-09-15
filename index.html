@@ -6,277 +6,892 @@
 <title>Sticker Studio</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=Almarai:wght@400;700;800&family=Amiri:wght@400;700&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;800;900&family=Almarai:wght@300;400;700;800&family=Amiri:wght@400;700&family=Reem+Kufi:wght@400;500;600;700&family=El+Messiri:wght@400;500;600;700&family=Lalezar&family=Aref+Ruqaa:wght@400;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Lateef&family=Scheherazade+New:wght@400;700&family=Harmattan:wght@400;700&family=Mada:wght@300;400;500;700&family=Vazirmatn:wght@300;400;500;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@300;400;500;600;700&family=Rubik:wght@300;400;500;700&family=Baloo+Bhaijaan+2:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+/* ============ Reset ============ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ============ Root ============ */
+:root {
+    --bg: #000000;
+    --bg-2: #0a0a0c;
+    --card: #1c1c1e;
+    --card-2: #2c2c2e;
+    --card-3: #3a3a3c;
+    --border: #2c2c2e;
+    --blue: #0a84ff;
+    --blue-dark: #0066cc;
+    --green: #30d158;
+    --red: #ff453a;
+    --text: #ffffff;
+    --text-2: #ebebf5;
+    --text-3: #8e8e93;
+    --text-4: #48484a;
+}
+
+/* ============ Body ============ */
 html, body {
-    background:#000; color:#fff;
-    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Cairo',sans-serif;
-    overflow-x:hidden; min-height:100vh;
-}
-body { padding:12px; padding-bottom:100px; }
-
-.header { display:flex; justify-content:space-between; align-items:center; padding:8px 4px 16px; }
-.header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
-.header .vip {
-    background:linear-gradient(135deg,#FFD700,#FFA500);
-    color:#000; padding:6px 14px; border-radius:20px;
-    font-size:12px; font-weight:700;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Cairo', 'Tajawal', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    font-weight: 400;
+    line-height: 1.4;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-.canvas-box {
-    background:linear-gradient(135deg,#1c1c1e,#2c2c2e);
-    border-radius:24px; padding:16px;
-    display:flex; justify-content:center; align-items:center;
-    margin-bottom:16px;
-    box-shadow:0 8px 24px rgba(0,0,0,0.5);
-    position:relative; overflow:hidden;
+body {
+    padding-bottom: 96px;
 }
-.canvas-box::before {
-    content:''; position:absolute; inset:0;
-    background:repeating-conic-gradient(#2c2c2e 0% 25%, #1c1c1e 0% 50%);
-    background-size:20px 20px; opacity:0.5;
-}
-.canvas-box canvas { position:relative; z-index:1; border-radius:12px; }
 
+/* ============ Top Bar ============ */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.topbar-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+}
+.topbar-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--card);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+.topbar-btn:active { transform: scale(0.94); }
+
+/* ============ Screens ============ */
+.screen {
+    display: none;
+    padding: 0 16px;
+}
+.screen.active {
+    display: block;
+    animation: fadeIn 0.25s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ Hero ============ */
+.hero {
+    padding: 32px 0 24px;
+    text-align: center;
+}
+.hero-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    background: rgba(10, 132, 255, 0.15);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 100px;
+    margin-bottom: 16px;
+    letter-spacing: -0.2px;
+}
+.hero-title {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    letter-spacing: -0.6px;
+}
+.hero-sub {
+    font-size: 14px;
+    color: var(--text-3);
+    margin-bottom: 24px;
+    line-height: 1.5;
+    padding: 0 20px;
+}
+.hero-cta {
+    width: 100%;
+    padding: 16px;
+    background: var(--blue);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: -0.3px;
+}
+.hero-cta:active { background: var(--blue-dark); transform: scale(0.98); }
+
+/* ============ Stats ============ */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+}
+.stat {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px 8px;
+    text-align: center;
+}
+.stat-num {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+.stat-label {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+/* ============ Tutorial ============ */
+.section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+}
+.tutorial-list {
+    background: var(--card);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+.tutorial-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.tutorial-item:last-child { border-bottom: none; }
+.tutorial-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.tutorial-text {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.4;
+    font-weight: 400;
+}
+
+/* ============ Canvas ============ */
+.canvas-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 0;
+    position: relative;
+}
+.canvas-wrap {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 16px;
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.canvas-wrap canvas {
+    border-radius: 12px;
+    max-width: 100%;
+    height: auto;
+}
+.canvas-ctrl {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--card-2);
+    border: none;
+    color: var(--text-2);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.canvas-ctrl:active { background: var(--card-3); }
+.ctrl-reset { top: 12px; left: 12px; }
+.ctrl-clear { top: 12px; right: 12px; }
+
+/* ============ Section Label ============ */
+.label {
+    font-size: 12px;
+    color: var(--text-3);
+    font-weight: 500;
+    margin: 16px 4px 8px;
+    letter-spacing: -0.1px;
+}
+
+/* ============ Move Pad ============ */
+.move-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 6px;
+    margin-bottom: 16px;
+}
+.move-btn {
+    padding: 14px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: var(--text-2);
+    font-size: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.move-btn:active { background: var(--card-2); }
+.move-btn.empty { visibility: hidden; }
+
+/* ============ Text Input ============ */
+.input-wrap {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.input-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue);
+    font-size: 15px;
+    font-weight: 600;
+    margin-left: 6px;
+    flex-shrink: 0;
+    font-family: Georgia, serif;
+}
+.input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 15px;
+    padding: 14px;
+    font-family: inherit;
+    outline: none;
+    text-align: right;
+}
+.input-wrap input::placeholder { color: var(--text-3); }
+.char-count {
+    font-size: 11px;
+    color: var(--text-3);
+    text-align: left;
+    padding: 0 4px 12px;
+    font-weight: 500;
+}
+
+/* ============ Tabs ============ */
 .tabs {
-    display:flex; background:#1c1c1e; border-radius:14px;
-    padding:4px; margin-bottom:12px; gap:4px;
+    display: flex;
+    gap: 6px;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
 }
 .tab {
-    flex:1; padding:10px; text-align:center; border-radius:10px;
-    font-size:14px; font-weight:600; color:#8e8e93;
-    transition:all 0.2s; cursor:pointer;
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    color: var(--text-3);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: -0.1px;
+    transition: all 0.15s;
 }
-.tab.active { background:#2c2c2e; color:#fff; }
-
-.panel { display:none; }
-.panel.active { display:block; animation:fadeIn 0.2s; }
-@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-
-.grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:12px; }
-.grid-item {
-    aspect-ratio:1; background:#1c1c1e; border-radius:14px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:26px; cursor:pointer; transition:all 0.15s;
-    border:2px solid transparent;
-}
-.grid-item:active { transform:scale(0.9); background:#2c2c2e; }
-
-.font-item {
-    padding:14px 12px; background:#1c1c1e; border-radius:14px;
-    margin-bottom:8px; display:flex; justify-content:space-between;
-    align-items:center; cursor:pointer; border:2px solid transparent;
-    font-size:20px;
-}
-.font-item:active { background:#2c2c2e; }
-.font-item.selected { border-color:#0a84ff; }
-.font-item .label { color:#8e8e93; font-size:12px; }
-
-.colors { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-.color-dot {
-    width:44px; height:44px; border-radius:50%;
-    cursor:pointer; border:3px solid transparent;
-    transition:all 0.15s;
-}
-.color-dot:active { transform:scale(0.85); }
-.color-dot.selected { border-color:#fff; transform:scale(1.1); }
-
-.slider-box { margin-bottom:16px; }
-.slider-box label { font-size:13px; color:#8e8e93; margin-bottom:8px; display:block; }
-input[type=range] {
-    width:100%; -webkit-appearance:none; height:6px;
-    background:#2c2c2e; border-radius:3px; outline:none;
-}
-input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance:none; width:24px; height:24px;
-    background:#fff; border-radius:50%; cursor:pointer;
-    box-shadow:0 2px 8px rgba(0,0,0,0.5);
+.tab.active {
+    background: var(--card-2);
+    color: var(--text);
 }
 
-input[type=text] {
-    width:100%; padding:16px; background:#1c1c1e;
-    border:1px solid #2c2c2e; border-radius:14px;
-    color:#fff; font-size:16px; margin-bottom:12px;
-    font-family:Cairo,sans-serif; outline:none;
-}
-input[type=text]:focus { border-color:#0a84ff; }
+/* ============ Panels ============ */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeIn 0.2s; }
 
-.btn-row { display:flex; gap:8px; margin-bottom:12px; }
-.btn {
-    flex:1; padding:14px; border-radius:14px; border:none;
-    background:#1c1c1e; color:#fff; font-size:15px; font-weight:600;
-    cursor:pointer; transition:all 0.15s; font-family:inherit;
+/* ============ Colors ============ */
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
 }
-.btn:active { transform:scale(0.96); background:#2c2c2e; }
-.btn.primary { background:#0a84ff; margin-bottom:12px; width:100%; }
-.btn.primary:active { background:#0066cc; }
-
-.pad { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
-.pad button {
-    padding:14px; background:#1c1c1e; border:none;
-    border-radius:12px; color:#fff; font-size:18px; cursor:pointer;
+.color-btn {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
 }
-.pad button:active { background:#2c2c2e; }
-.pad .empty { visibility:hidden; }
-
-.save-btn {
-    position:fixed; bottom:20px; left:16px; right:16px;
-    padding:18px; background:linear-gradient(135deg,#0a84ff,#0066cc);
-    border:none; border-radius:18px; color:#fff;
-    font-size:17px; font-weight:700; cursor:pointer;
-    box-shadow:0 8px 24px rgba(10,132,255,0.4);
-    z-index:100; font-family:inherit;
+.color-btn:active { transform: scale(0.9); }
+.color-btn.active {
+    border-color: var(--blue);
+    transform: scale(1.05);
 }
-.save-btn:active { transform:scale(0.97); }
+.color-btn.gold {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+}
 
+/* ============ Fonts ============ */
+.font-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 340px;
+    overflow-y: auto;
+    padding-bottom: 4px;
+}
+.font-list::-webkit-scrollbar { width: 0; }
+.font-btn {
+    padding: 16px;
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    text-align: right;
+    font-family: inherit;
+    transition: all 0.15s;
+    line-height: 1.3;
+}
+.font-btn:active { background: var(--card-2); }
+.font-btn.active {
+    border-color: var(--blue);
+    background: rgba(10, 132, 255, 0.1);
+}
+.font-btn .font-name {
+    display: block;
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: -apple-system, sans-serif;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* ============ Size ============ */
+.range-wrap {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px;
+}
+.range-wrap input[type=range] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--card-3);
+    border-radius: 2px;
+    outline: none;
+}
+.range-wrap input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.range-value {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-2);
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+/* ============ Main Button ============ */
+.main-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--blue);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 20px;
+    letter-spacing: -0.3px;
+}
+.main-btn:active { background: var(--blue-dark); transform: scale(0.98); }
+.main-btn:disabled {
+    background: var(--card-2);
+    color: var(--text-3);
+    cursor: not-allowed;
+}
+
+/* ============ Pack Grid ============ */
+.pack-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.pack-cell {
+    aspect-ratio: 1;
+    background: var(--card);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+.pack-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.pack-cell .plus {
+    color: var(--text-3);
+    font-size: 28px;
+    font-weight: 300;
+}
+.pack-cell .del {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 24px;
+    height: 24px;
+    background: var(--red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+}
+
+/* ============ Empty ============ */
+.empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-3);
+}
+.empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+.empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 6px;
+}
+.empty-sub {
+    font-size: 13px;
+    color: var(--text-3);
+    line-height: 1.5;
+}
+
+/* ============ Bottom Nav ============ */
+.nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(28, 28, 30, 0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 20px;
+    z-index: 100;
+}
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-4);
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 20px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    letter-spacing: -0.1px;
+}
+.nav-item.active { color: var(--blue); }
+.nav-icon {
+    font-size: 22px;
+    line-height: 1;
+}
+.nav-icon.plus {
+    font-size: 28px;
+    font-weight: 300;
+}
+
+/* ============ Header (Editor) ============ */
+.screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0 8px;
+}
+.screen-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+.back-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--card);
+    border: none;
+    border-radius: 8px;
+    color: var(--text-2);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.back-btn:active { background: var(--card-2); }
+
+/* ============ Pack Name Input ============ */
+.pack-name-input {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 8px;
+}
+.pack-name-input input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 15px;
+    padding: 16px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    outline: none;
+    letter-spacing: 1px;
+}
+.pack-name-input input::placeholder {
+    color: var(--text-3);
+    font-family: inherit;
+    letter-spacing: 0;
+}
+.pack-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+.pack-hint.active { color: var(--green); }
+
+/* ============ Toast ============ */
 .toast {
-    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.9);
-    background:rgba(28,28,30,0.95); padding:16px 24px;
-    border-radius:14px; font-size:14px; opacity:0;
-    transition:all 0.3s; pointer-events:none; z-index:999;
-    backdrop-filter:blur(20px);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: rgba(28, 28, 30, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 999;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    max-width: 280px;
+    text-align: center;
 }
-.toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>🎨 استوديو الملصقات</h1>
-    <div class="vip">VIP</div>
-</div>
-
-<div class="canvas-box">
-    <canvas id="c" width="512" height="512"></canvas>
-</div>
-
-<div class="tabs">
-    <div class="tab active" onclick="switchTab('emoji',this)">إيموجي</div>
-    <div class="tab" onclick="switchTab('text',this)">نص</div>
-    <div class="tab" onclick="switchTab('color',this)">ألوان</div>
-    <div class="tab" onclick="switchTab('font',this)">خطوط</div>
-</div>
-
-<div class="panel active" id="panel-emoji">
-    <div class="grid">
-        <div class="grid-item" onclick="addEmoji('👑')">👑</div>
-        <div class="grid-item" onclick="addEmoji('❤️')">❤️</div>
-        <div class="grid-item" onclick="addEmoji('⭐')">⭐</div>
-        <div class="grid-item" onclick="addEmoji('🔥')">🔥</div>
-        <div class="grid-item" onclick="addEmoji('💎')">💎</div>
-        <div class="grid-item" onclick="addEmoji('🌙')">🌙</div>
-        <div class="grid-item" onclick="addEmoji('⚡')">⚡</div>
-        <div class="grid-item" onclick="addEmoji('🎯')">🎯</div>
-        <div class="grid-item" onclick="addEmoji('🏆')">🏆</div>
-        <div class="grid-item" onclick="addEmoji('💯')">💯</div>
-        <div class="grid-item" onclick="addEmoji('🦅')">🦅</div>
-        <div class="grid-item" onclick="addEmoji('🦁')">🦁</div>
-        <div class="grid-item" onclick="addEmoji('🐉')">🐉</div>
-        <div class="grid-item" onclick="addEmoji('🌹')">🌹</div>
-        <div class="grid-item" onclick="addEmoji('💀')">💀</div>
-        <div class="grid-item" onclick="addEmoji('👽')">👽</div>
-        <div class="grid-item" onclick="addEmoji('🎭')">🎭</div>
-        <div class="grid-item" onclick="addEmoji('🎪')">🎪</div>
-        <div class="grid-item" onclick="addEmoji('🎨')">🎨</div>
-        <div class="grid-item" onclick="addEmoji('🚀')">🚀</div>
+<!-- ============ HOME ============ -->
+<div class="screen active" id="screen-home">
+    <div class="topbar">
+        <div class="topbar-title">استوديو الملصقات</div>
+        <button class="topbar-btn" onclick="goTo('editor')">✦</button>
     </div>
-</div>
 
-<div class="panel" id="panel-text">
-    <button class="btn primary" onclick="addText()">➕ إضافة نص</button>
-    <input type="text" id="textInput" placeholder="اكتب النص هنا..." maxlength="20">
-    <div class="btn-row">
-        <button class="btn" onclick="updateText()">تحديث</button>
-        <button class="btn" onclick="deleteActive()">🗑 حذف</button>
+    <div class="hero">
+        <div class="hero-badge">مجاني بالكامل</div>
+        <div class="hero-title">
+            اصنع حزم ملصقاتك<br>الخاصة
+        </div>
+        <div class="hero-sub">
+            صمم ملصقات احترافية بخطوط عربية أصلية، وأنشئ حزمة حقيقية في تليجرام فوراً.
+        </div>
+        <button class="hero-cta" onclick="goTo('editor')">ابدأ التصميم</button>
     </div>
-    <div class="slider-box">
-        <label>حجم الخط</label>
-        <input type="range" id="fontSize" min="20" max="200" value="80" oninput="changeSize(this.value)">
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-num" id="statStickers">0</div>
+            <div class="stat-label">ملصق</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num" id="statPacks">0</div>
+            <div class="stat-label">حزمة</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num" id="statToday">0</div>
+            <div class="stat-label">اليوم</div>
+        </div>
     </div>
-    <div class="pad">
-        <div class="empty"></div>
-        <button onclick="move('up')">⬆️</button>
-        <div class="empty"></div>
-        <button onclick="move('left')">⬅️</button>
-        <button onclick="move('center')">⏺</button>
-        <button onclick="move('right')">➡️</button>
-        <div class="empty"></div>
-        <button onclick="move('down')">⬇️</button>
-        <div class="empty"></div>
-    </div>
-    <div class="btn-row">
-        <button class="btn" onclick="rotate(-15)">↺</button>
-        <button class="btn" onclick="rotate(15)">↻</button>
-        <button class="btn" onclick="flip()">🔄</button>
+
+    <div class="section-title">كيف يعمل؟</div>
+    <div class="tutorial-list">
+        <div class="tutorial-item">
+            <div class="tutorial-num">1</div>
+            <div class="tutorial-text">صمم ملصقك في المحرر</div>
+        </div>
+        <div class="tutorial-item">
+            <div class="tutorial-num">2</div>
+            <div class="tutorial-text">أضفه إلى الحزمة</div>
+        </div>
+        <div class="tutorial-item">
+            <div class="tutorial-num">3</div>
+            <div class="tutorial-text">اكتب اسم الحزمة بالإنجليزية</div>
+        </div>
+        <div class="tutorial-item">
+            <div class="tutorial-num">4</div>
+            <div class="tutorial-text">استلم الرابط الحقيقي في تليجرام</div>
+        </div>
     </div>
 </div>
 
-<div class="panel" id="panel-color">
-    <div class="colors">
-        <div class="color-dot selected" style="background:#fff" onclick="setColor('#ffffff',this)"></div>
-        <div class="color-dot" style="background:#000" onclick="setColor('#000000',this)"></div>
-        <div class="color-dot" style="background:#ff3b30" onclick="setColor('#ff3b30',this)"></div>
-        <div class="color-dot" style="background:#ff9500" onclick="setColor('#ff9500',this)"></div>
-        <div class="color-dot" style="background:#ffcc00" onclick="setColor('#ffcc00',this)"></div>
-        <div class="color-dot" style="background:#34c759" onclick="setColor('#34c759',this)"></div>
-        <div class="color-dot" style="background:#00c7be" onclick="setColor('#00c7be',this)"></div>
-        <div class="color-dot" style="background:#0a84ff" onclick="setColor('#0a84ff',this)"></div>
-        <div class="color-dot" style="background:#5e5ce6" onclick="setColor('#5e5ce6',this)"></div>
-        <div class="color-dot" style="background:#bf5af2" onclick="setColor('#bf5af2',this)"></div>
-        <div class="color-dot" style="background:#ff2d55" onclick="setColor('#ff2d55',this)"></div>
-        <div class="color-dot" style="background:linear-gradient(135deg,#FFD700,#FFA500)" onclick="setColor('#FFD700',this)"></div>
+<!-- ============ EDITOR ============ -->
+<div class="screen" id="screen-editor">
+    <div class="screen-header">
+        <button class="back-btn" onclick="goTo('home')">←</button>
+        <div class="screen-title">تصميم الملصق</div>
+        <div style="width:32px;"></div>
     </div>
-    <div class="slider-box">
-        <label>شفافية</label>
-        <input type="range" id="opacity" min="0" max="100" value="100" oninput="setOpacity(this.value)">
+
+    <div class="canvas-container">
+        <div class="canvas-wrap">
+            <button class="canvas-ctrl ctrl-reset" onclick="resetCanvas()">↻</button>
+            <button class="canvas-ctrl ctrl-clear" onclick="clearCanvas()">✕</button>
+            <canvas id="canvas" width="512" height="512"></canvas>
+        </div>
     </div>
-    <div class="slider-box">
-        <label>ظل (Shadow)</label>
-        <input type="range" id="shadow" min="0" max="20" value="0" oninput="setShadow(this.value)">
+
+    <div class="label">موضع النص</div>
+    <div class="move-pad">
+        <button class="move-btn empty"></button>
+        <button class="move-btn" onclick="move('up')">↑</button>
+        <button class="move-btn empty"></button>
+        <button class="move-btn" onclick="move('left')">←</button>
+        <button class="move-btn" onclick="move('center')">●</button>
+        <button class="move-btn" onclick="move('right')">→</button>
+        <button class="move-btn empty"></button>
+        <button class="move-btn" onclick="move('down')">↓</button>
+        <button class="move-btn empty"></button>
+    </div>
+
+    <div class="label">النص</div>
+    <div class="input-wrap">
+        <div class="input-icon">T</div>
+        <input type="text" id="textInput" placeholder="اكتب النص هنا" maxlength="30" oninput="onTextInput()">
+    </div>
+    <div class="char-count"><span id="charCount">0</span> / 30</div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('font', this)">الخطوط</button>
+        <button class="tab" onclick="switchTab('color', this)">الألوان</button>
+        <button class="tab" onclick="switchTab('size', this)">الحجم</button>
+    </div>
+
+    <div class="panel active" id="panel-font">
+        <div class="font-list">
+            <button class="font-btn active" style="font-family: 'Cairo'" onclick="setFont('Cairo', this)">القاهرة<span class="font-name">Cairo</span></button>
+            <button class="font-btn" style="font-family: 'Tajawal'" onclick="setFont('Tajawal', this)">تجوال<span class="font-name">Tajawal</span></button>
+            <button class="font-btn" style="font-family: 'Almarai'" onclick="setFont('Almarai', this)">المراعي<span class="font-name">Almarai</span></button>
+            <button class="font-btn" style="font-family: 'Amiri'" onclick="setFont('Amiri', this)">أميري<span class="font-name">Amiri</span></button>
+            <button class="font-btn" style="font-family: 'Reem Kufi'" onclick="setFont('Reem Kufi', this)">ريم كوفي<span class="font-name">Reem Kufi</span></button>
+            <button class="font-btn" style="font-family: 'El Messiri'" onclick="setFont('El Messiri', this)">المصيري<span class="font-name">El Messiri</span></button>
+            <button class="font-btn" style="font-family: 'Lalezar'" onclick="setFont('Lalezar', this)">لالزار<span class="font-name">Lalezar</span></button>
+            <button class="font-btn" style="font-family: 'Aref Ruqaa'" onclick="setFont('Aref Ruqaa', this)">عارف رقعة<span class="font-name">Aref Ruqaa</span></button>
+            <button class="font-btn" style="font-family: 'Noto Sans Arabic'" onclick="setFont('Noto Sans Arabic', this)">نوتو سانس<span class="font-name">Noto Sans Arabic</span></button>
+            <button class="font-btn" style="font-family: 'Noto Kufi Arabic'" onclick="setFont('Noto Kufi Arabic', this)">نوتو كوفي<span class="font-name">Noto Kufi Arabic</span></button>
+            <button class="font-btn" style="font-family: 'Lateef'" onclick="setFont('Lateef', this)">لطيف<span class="font-name">Lateef</span></button>
+            <button class="font-btn" style="font-family: 'Scheherazade New'" onclick="setFont('Scheherazade New', this)">شهرزاد<span class="font-name">Scheherazade New</span></button>
+            <button class="font-btn" style="font-family: 'Harmattan'" onclick="setFont('Harmattan', this)">هرمتان<span class="font-name">Harmattan</span></button>
+            <button class="font-btn" style="font-family: 'Mada'" onclick="setFont('Mada', this)">مدى<span class="font-name">Mada</span></button>
+            <button class="font-btn" style="font-family: 'Vazirmatn'" onclick="setFont('Vazirmatn', this)">وزير<span class="font-name">Vazirmatn</span></button>
+            <button class="font-btn" style="font-family: 'IBM Plex Sans Arabic'" onclick="setFont('IBM Plex Sans Arabic', this)">IBM بلكس<span class="font-name">IBM Plex Sans Arabic</span></button>
+            <button class="font-btn" style="font-family: 'Alexandria'" onclick="setFont('Alexandria', this)">الإسكندرية<span class="font-name">Alexandria</span></button>
+            <button class="font-btn" style="font-family: 'Rubik'" onclick="setFont('Rubik', this)">روبيك<span class="font-name">Rubik</span></button>
+            <button class="font-btn" style="font-family: 'Baloo Bhaijaan 2'" onclick="setFont('Baloo Bhaijaan 2', this)">بالو<span class="font-name">Baloo Bhaijaan 2</span></button>
+            <button class="font-btn" style="font-family: 'Readex Pro'" onclick="setFont('Readex Pro', this)">ريدكس<span class="font-name">Readex Pro</span></button>
+        </div>
+    </div>
+
+    <div class="panel" id="panel-color">
+        <div class="color-grid">
+            <button class="color-btn active" style="background: #ffffff" onclick="setColor('#ffffff', this)"></button>
+            <button class="color-btn" style="background: #000000; border: 1px solid #3a3a3c" onclick="setColor('#000000', this)"></button>
+            <button class="color-btn" style="background: #ff453a" onclick="setColor('#ff453a', this)"></button>
+            <button class="color-btn" style="background: #ff9f0a" onclick="setColor('#ff9f0a', this)"></button>
+            <button class="color-btn" style="background: #ffd60a" onclick="setColor('#ffd60a', this)"></button>
+            <button class="color-btn" style="background: #30d158" onclick="setColor('#30d158', this)"></button>
+            <button class="color-btn" style="background: #40c8e0" onclick="setColor('#40c8e0', this)"></button>
+            <button class="color-btn" style="background: #0a84ff" onclick="setColor('#0a84ff', this)"></button>
+            <button class="color-btn" style="background: #5e5ce6" onclick="setColor('#5e5ce6', this)"></button>
+            <button class="color-btn" style="background: #bf5af2" onclick="setColor('#bf5af2', this)"></button>
+            <button class="color-btn" style="background: #ff375f" onclick="setColor('#ff375f', this)"></button>
+            <button class="color-btn gold" onclick="setColor('#FFD700', this)"></button>
+        </div>
+    </div>
+
+    <div class="panel" id="panel-size">
+        <div class="range-wrap">
+            <input type="range" id="sizeRange" min="20" max="200" value="80" oninput="changeSize(this.value)">
+            <div class="range-value"><span id="sizeValue">80</span> px</div>
+        </div>
+    </div>
+
+    <button class="main-btn" onclick="addToPack()">إضافة إلى الحزمة</button>
+</div>
+
+<!-- ============ PACK ============ -->
+<div class="screen" id="screen-pack">
+    <div class="screen-header">
+        <button class="back-btn" onclick="goTo('home')">←</button>
+        <div class="screen-title">حزمي</div>
+        <div style="width:32px;"></div>
+    </div>
+
+    <div class="pack-grid" id="packGrid"></div>
+
+    <div class="empty" id="emptyPack">
+        <div class="empty-icon">▢</div>
+        <div class="empty-title">لا توجد ملصقات بعد</div>
+        <div class="empty-sub">اذهب إلى المحرر وابدأ التصميم</div>
+    </div>
+
+    <div class="label">اسم الحزمة</div>
+    <div class="pack-name-input">
+        <input type="text" id="packNameInput" placeholder="مثال: toe7e" maxlength="25" oninput="onPackNameInput()" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="pack-hint" id="packHint">بالإنجليزية فقط</div>
+
+    <button class="main-btn" id="sendBtn" onclick="sendToTelegram()">إنشاء الحزمة في تليجرام</button>
+
+    <div class="nav">
+        <button class="nav-item" onclick="goTo('home')">
+            <div class="nav-icon">⌂</div>
+            <div>الرئيسية</div>
+        </button>
+        <button class="nav-item" onclick="goTo('editor')">
+            <div class="nav-icon plus">+</div>
+            <div>إنشاء</div>
+        </button>
+        <button class="nav-item active" onclick="goTo('pack')">
+            <div class="nav-icon">▢</div>
+            <div>حزمي</div>
+        </button>
     </div>
 </div>
 
-<div class="panel" id="panel-font">
-    <div class="font-item" onclick="setFont('Cairo',this)">
-        <span style="font-family:Cairo">القاهرة</span>
-        <span class="label">Cairo</span>
-    </div>
-    <div class="font-item" onclick="setFont('Tajawal',this)">
-        <span style="font-family:Tajawal">تجوال</span>
-        <span class="label">Tajawal</span>
-    </div>
-    <div class="font-item" onclick="setFont('Almarai',this)">
-        <span style="font-family:Almarai">المراعي</span>
-        <span class="label">Almarai</span>
-    </div>
-    <div class="font-item" onclick="setFont('Amiri',this)">
-        <span style="font-family:Amiri">أميري</span>
-        <span class="label">Amiri</span>
-    </div>
-    <div class="font-item" onclick="setFont('Reem Kufi',this)">
-        <span style="font-family:'Reem Kufi'">ريم كوفي</span>
-        <span class="label">Reem Kufi</span>
-    </div>
-    <div class="font-item" onclick="setFont('Arial',this)">
-        <span style="font-family:Arial">Arial</span>
-        <span class="label">Arial</span>
-    </div>
-</div>
-
-<button class="save-btn" onclick="saveSticker()">💾 حفظ الملصق المميز</button>
 <div class="toast" id="toast"></div>
 
 <script>
+// ============ Telegram ============
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.setHeaderColor('#000000');
 tg.setBackgroundColor('#000000');
+tg.disableVerticalSwipes?.();
 
-const canvas = new fabric.Canvas('c', {
-    backgroundColor:'transparent',
-    preserveObjectStacking:true,
-    selection:false
+// ============ State ============
+let pack = [];
+let stickersCount = 0;
+let packsCount = 0;
+let dailyUsage = 0;
+
+// ============ Canvas ============
+const canvas = new fabric.Canvas('canvas', {
+    backgroundColor: 'transparent',
+    preserveObjectStacking: true,
+    selection: false
 });
 
 let activeObj = null;
@@ -285,151 +900,222 @@ canvas.on('selection:created', e => activeObj = e.selected[0]);
 canvas.on('selection:updated', e => activeObj = e.selected[0]);
 canvas.on('selection:cleared', () => activeObj = null);
 
-function switchTab(name, el) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('panel-' + name).classList.add('active');
+// ============ Navigation ============
+function goTo(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navs = document.querySelectorAll('#screen-pack .nav-item');
+    if (name === 'home') navs[0]?.classList.add('active');
+    if (name === 'editor') navs[1]?.classList.add('active');
+    if (name === 'pack') { navs[2]?.classList.add('active'); renderPack(); }
 }
 
+// ============ Toast ============
 function toast(msg) {
     const t = document.getElementById('toast');
     t.innerText = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 1500);
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 1600);
 }
 
-function addEmoji(emoji) {
-    const obj = new fabric.IText(emoji, {
-        left:256, top:256, fontSize:120,
-        originX:'center', originY:'center', fontFamily:'Arial'
-    });
-    canvas.add(obj);
-    canvas.setActiveObject(obj);
-    activeObj = obj;
-    canvas.renderAll();
-    toast('تمت الإضافة ✅');
+// ============ Tabs ============
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
 }
 
-function addText() {
-    const val = document.getElementById('textInput').value || 'نصك هنا';
-    const obj = new fabric.IText(val, {
-        left:256, top:256, fontSize:80,
-        fill:'#ffffff', fontFamily:'Cairo',
-        originX:'center', originY:'center'
-    });
-    canvas.add(obj);
-    canvas.setActiveObject(obj);
-    activeObj = obj;
-    canvas.renderAll();
+// ============ Canvas Operations ============
+function resetCanvas() {
+    canvas.clear();
+    canvas.backgroundColor = 'transparent';
+    initCanvas();
+    toast('تمت إعادة التعيين');
 }
 
-function updateText() {
-    if (!activeObj || activeObj.type !== 'i-text') return;
-    const val = document.getElementById('textInput').value;
-    if (!val) return;
-    activeObj.set('text', val);
-    canvas.renderAll();
-}
-
-function deleteActive() {
+function clearCanvas() {
     if (activeObj) {
         canvas.remove(activeObj);
         activeObj = null;
         canvas.renderAll();
-        toast('تم الحذف 🗑');
+    }
+}
+
+function move(dir) {
+    if (!activeObj) { toast('اختر عنصراً أولاً'); return; }
+    const step = 10;
+    if (dir === 'up')     activeObj.set('top', activeObj.top - step);
+    if (dir === 'down')   activeObj.set('top', activeObj.top + step);
+    if (dir === 'left')   activeObj.set('left', activeObj.left - step);
+    if (dir === 'right')  activeObj.set('left', activeObj.left + step);
+    if (dir === 'center') activeObj.set({ left: 256, top: 256 });
+    canvas.renderAll();
+}
+
+function onTextInput() {
+    const val = document.getElementById('textInput').value;
+    document.getElementById('charCount').innerText = val.length;
+    if (activeObj && activeObj.type === 'i-text') {
+        activeObj.set('text', val || ' ');
+        canvas.renderAll();
     }
 }
 
 function setColor(color, el) {
-    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
-    el.classList.add('selected');
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
     if (activeObj) {
         activeObj.set('fill', color);
         canvas.renderAll();
     }
 }
 
-function setOpacity(val) {
-    if (activeObj) {
-        activeObj.set('opacity', val/100);
-        canvas.renderAll();
-    }
-}
-
-function setShadow(val) {
-    if (activeObj) {
-        activeObj.set('shadow', val > 0 ? new fabric.Shadow({
-            color:'rgba(0,0,0,0.8)', blur:parseInt(val), offsetX:0, offsetY:0
-        }) : null);
-        canvas.renderAll();
-    }
-}
-
 function setFont(font, el) {
-    document.querySelectorAll('.font-item').forEach(f => f.classList.remove('selected'));
-    el.classList.add('selected');
+    document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
     if (activeObj && activeObj.type === 'i-text') {
         activeObj.set('fontFamily', font);
         canvas.renderAll();
-        toast('الخط: ' + font);
     }
 }
 
 function changeSize(val) {
+    document.getElementById('sizeValue').innerText = val;
     if (activeObj) {
         activeObj.set('fontSize', parseInt(val));
         canvas.renderAll();
     }
 }
 
-function move(dir) {
-    if (!activeObj) return;
-    const step = 10;
-    if (dir === 'up')     activeObj.set('top', activeObj.top - step);
-    if (dir === 'down')   activeObj.set('top', activeObj.top + step);
-    if (dir === 'left')   activeObj.set('left', activeObj.left - step);
-    if (dir === 'right')  activeObj.set('left', activeObj.left + step);
-    if (dir === 'center') activeObj.set({ left:256, top:256 });
-    canvas.renderAll();
-}
-
-function rotate(deg) {
-    if (activeObj) {
-        activeObj.rotate((activeObj.angle || 0) + deg);
-        canvas.renderAll();
-    }
-}
-
-function flip() {
-    if (activeObj) {
-        activeObj.set('flipX', !activeObj.flipX);
-        canvas.renderAll();
-    }
-}
-
-function saveSticker() {
+// ============ Add to Pack ============
+function addToPack() {
     if (canvas.getObjects().length === 0) {
-        toast('أضف شيئاً أولاً!');
+        toast('أضف نصاً أولاً');
         return;
     }
     canvas.discardActiveObject();
     canvas.renderAll();
-    const dataURL = canvas.toDataURL({ format:'png', quality:1.0, multiplier:1 });
-    tg.sendData(JSON.stringify({ action:'save', image:dataURL }));
-    tg.close();
+
+    const dataURL = canvas.toDataURL({ format: 'png', quality: 1.0 });
+    pack.push(dataURL);
+    stickersCount++;
+    dailyUsage++;
+    updateStats();
+
+    toast('تمت الإضافة (' + pack.length + ')');
+    goTo('pack');
 }
 
-window.addEventListener('load', () => {
-    const obj = new fabric.IText('اسمك', {
-        left:256, top:256, fontSize:80,
-        fill:'#ffffff', fontFamily:'Cairo',
-        originX:'center', originY:'center'
+// ============ Render Pack ============
+function renderPack() {
+    const grid = document.getElementById('packGrid');
+    const empty = document.getElementById('emptyPack');
+    grid.innerHTML = '';
+
+    if (pack.length === 0) {
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+
+    pack.forEach((dataURL, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'pack-cell';
+        cell.innerHTML = `<img src="${dataURL}"><button class="del" onclick="removeFromPack(${i}, event)">✕</button>`;
+        grid.appendChild(cell);
+    });
+
+    if (pack.length < 50) {
+        const addCell = document.createElement('div');
+        addCell.className = 'pack-cell';
+        addCell.innerHTML = '<div class="plus">+</div>';
+        addCell.onclick = () => goTo('editor');
+        grid.appendChild(addCell);
+    }
+}
+
+function removeFromPack(i, e) {
+    e.stopPropagation();
+    pack.splice(i, 1);
+    renderPack();
+}
+
+// ============ Pack Name Validation ============
+function onPackNameInput() {
+    const input = document.getElementById('packNameInput');
+    const raw = input.value;
+    const clean = raw.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+
+    if (clean !== raw) input.value = clean;
+
+    const hint = document.getElementById('packHint');
+    if (clean.length >= 3) {
+        hint.innerText = 'سيصبح الرابط: ' + clean + '_by_Bot';
+        hint.classList.add('active');
+    } else {
+        hint.innerText = 'بالإنجليزية فقط';
+        hint.classList.remove('active');
+    }
+}
+
+// ============ Send to Telegram ============
+function sendToTelegram() {
+    if (pack.length === 0) { toast('الحزمة فارغة'); return; }
+
+    const packName = document.getElementById('packNameInput').value.trim();
+    if (packName.length < 3) { toast('اكتب اسماً صالحاً'); return; }
+
+    packsCount++;
+    updateStats();
+
+    tg.sendData(JSON.stringify({
+        action: 'create_pack',
+        pack_name: packName,
+        pack_title: 'My Stickers',
+        stickers: pack
+    }));
+
+    toast('جاري الإرسال...');
+    setTimeout(() => tg.close(), 1500);
+}
+
+// ============ Stats ============
+function updateStats() {
+    document.getElementById('statStickers').innerText = stickersCount;
+    document.getElementById('statPacks').innerText = packsCount;
+    document.getElementById('statToday').innerText = dailyUsage;
+}
+
+// ============ Init Canvas ============
+function initCanvas() {
+    const obj = new fabric.IText('اكتب هنا', {
+        left: 256,
+        top: 256,
+        fontSize: 80,
+        fill: '#ffffff',
+        fontFamily: 'Cairo',
+        originX: 'center',
+        originY: 'center',
+        textAlign: 'center'
     });
     canvas.add(obj);
     canvas.setActiveObject(obj);
     activeObj = obj;
     canvas.renderAll();
+}
+
+// ============ Init ============
+window.addEventListener('load', () => {
+    // تأخير بسيط حتى تُحمّل الخطوط
+    document.fonts.ready.then(() => {
+        initCanvas();
+        updateStats();
+        renderPack();
+    });
 });
 </script>
 </body>
